@@ -1,0 +1,33 @@
+# Builds Muguet's iOS app WITHOUT game code: the launcher UI only (no game.wasm involved).
+# Put this file at .github/workflows/build-ipa.yml in your fork, then run it from the Actions tab.
+name: Build Muguet IPA (UI only, no game code)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version (needs 26 or later)
+        run: xcodebuild -version
+
+      - name: Install tools
+        run: |
+          brew install xcodegen
+          rustup toolchain install 1.98.1 --profile minimal --target aarch64-apple-ios
+
+      - name: Build the IPA (no game zip, so no game code)
+        run: |
+          chmod +x make-ios.sh
+          ./make-ios.sh --ipa
+
+      - name: Upload the IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Muguet-ipa
+          path: build/Muguet.ipa
+          if-no-files-found: error
